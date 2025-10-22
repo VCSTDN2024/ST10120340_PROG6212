@@ -1,0 +1,75 @@
+﻿@model ContractMonthlyClaimSystem.Models.LecturerClaim
+
+@{
+    ViewData["Title"] = "Claim Details";
+}
+
+<div class="container mt-4">
+    <h2>Claim Details</h2>
+    <hr />
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Date Submitted</dt>
+                <dd class="col-sm-9">@Model.DateSubmitted.ToString("dd MMMM yyyy HH:mm")</dd>
+
+                <dt class="col-sm-3">Hours Worked</dt>
+                <dd class="col-sm-9">@Model.HoursWorked</dd>
+
+                <dt class="col-sm-3">Hourly Rate</dt>
+                <dd class="col-sm-9">R @Model.HourlyRate.ToString("N2")</dd>
+
+                <dt class="col-sm-3">Total Amount</dt>
+                <dd class="col-sm-9"><strong>R @Model.TotalAmount.ToString("N2")</strong></dd>
+
+                @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+                {
+                    <dt class="col-sm-3">Additional Notes</dt>
+                    <dd class="col-sm-9">@Model.AdditionalNotes</dd>
+                }
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">
+                    @if (Model.Status == "Pending")
+                    {
+                        <span class="badge bg-warning text-dark">@Model.Status</span>
+                    }
+                    else if (Model.Status == "Approved")
+                    {
+                        <span class="badge bg-success">@Model.Status</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">@Model.Status</span>
+                    }
+                </dd>
+
+                @if (!string.IsNullOrEmpty(Model.DocumentPath))
+                {
+                    <dt class="col-sm-3">Supporting Document</dt>
+                    <dd class="col-sm-9">
+                        <a href="@Model.DocumentPath" target="_blank" class="btn btn-sm btn-outline-primary">View Document</a>
+                    </dd>
+                }
+
+                @if (Model.Status != "Pending")
+                {
+                    <dt class="col-sm-3">Reviewed By</dt>
+                    <dd class="col-sm-9">@Model.ReviewedBy</dd>
+
+                    <dt class="col-sm-3">Review Date</dt>
+                    <dd class="col-sm-9">@Model.ReviewDate?.ToString("dd MMMM yyyy HH:mm")</dd>
+
+                    @if (!string.IsNullOrEmpty(Model.ReviewComments))
+                    {
+                        <dt class="col-sm-3">Review Comments</dt>
+                        <dd class="col-sm-9">@Model.ReviewComments</dd>
+                    }
+                }
+            </dl>
+
+            <a asp-action="Index" class="btn btn-secondary">Back to My Claims</a>
+        </div>
+    </div>
+</div>

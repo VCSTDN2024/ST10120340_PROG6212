@@ -1,0 +1,52 @@
+﻿@model ContractMonthlyClaimSystem.ViewModels.SubmitClaimViewModel
+
+@{
+    ViewData["Title"] = "Submit Claim";
+}
+
+<div class="container mt-4">
+    <h2>Submit New Claim</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="SubmitClaim" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="HoursWorked" class="form-label"></label>
+                    <input asp-for="HoursWorked" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="HoursWorked" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="HourlyRate" class="form-label"></label>
+                    <input asp-for="HourlyRate" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="HourlyRate" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="AdditionalNotes" class="form-label"></label>
+                    <textarea asp-for="AdditionalNotes" class="form-control" rows="4"></textarea>
+                    <span asp-validation-for="AdditionalNotes" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SupportingDocument" class="form-label"></label>
+                    <input asp-for="SupportingDocument" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png,.docx" />
+                    <small class="form-text text-muted">Optional: Upload supporting documents (PDF, JPG, PNG, DOCX)</small>
+                    <span asp-validation-for="SupportingDocument" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Submit Claim</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

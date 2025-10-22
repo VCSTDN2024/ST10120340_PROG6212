@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using ContractMonthlyClaimSystem.Models;
 
 namespace ContractMonthlyClaimSystem.Data
 {
@@ -9,5 +11,7 @@ namespace ContractMonthlyClaimSystem.Data
             : base(options)
         {
         }
+
+        public DbSet<LecturerClaim> LecturerClaims { get; set; }
     }
 }
