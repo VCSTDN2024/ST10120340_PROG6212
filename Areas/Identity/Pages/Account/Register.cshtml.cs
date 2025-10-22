@@ -129,7 +129,6 @@ namespace ContractMonthlyClaimSystem.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-
                     // CREATE ROLE IF IT DOESN'T EXIST
                     if (!await _roleManager.RoleExistsAsync(Input.Role))
                     {
@@ -138,7 +137,6 @@ namespace ContractMonthlyClaimSystem.Areas.Identity.Pages.Account
 
                     // ASSIGN ROLE TO USER
                     await _userManager.AddToRoleAsync(user, Input.Role);
-
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -159,7 +157,15 @@ namespace ContractMonthlyClaimSystem.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
+
+                        // REDIRECT BASED ON ROLE AFTER REGISTRATION
+                        return Input.Role switch
+                        {
+                            "Lecturer" => RedirectToAction("Index", "Lecturer", new { area = "" }),
+                            "Programme Coordinator" => RedirectToAction("Index", "Review", new { area = "" }),
+                            "Academic Manager" => RedirectToAction("Index", "Review", new { area = "" }),
+                            _ => LocalRedirect(returnUrl)
+                        };
                     }
                 }
                 foreach (var error in result.Errors)

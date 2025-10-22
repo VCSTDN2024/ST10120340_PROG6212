@@ -1,0 +1,143 @@
+﻿@model ContractMonthlyClaimSystem.ViewModels.ReviewClaimViewModel
+
+@{
+    ViewData["Title"] = "Review Claim";
+}
+
+<div class="container mt-4">
+    <h2>Review Claim</h2>
+    <hr />
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Claim Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Lecturer</dt>
+                        <dd class="col-sm-8">@Model.LecturerName</dd>
+
+                        <dt class="col-sm-4">Date Submitted</dt>
+                        <dd class="col-sm-8">@Model.DateSubmitted.ToString("dd MMMM yyyy HH:mm")</dd>
+
+                        <dt class="col-sm-4">Hours Worked</dt>
+                        <dd class="col-sm-8">@Model.HoursWorked</dd>
+
+                        <dt class="col-sm-4">Hourly Rate</dt>
+                        <dd class="col-sm-8">R @Model.HourlyRate.ToString("N2")</dd>
+
+                        <dt class="col-sm-4">Total Amount</dt>
+                        <dd class="col-sm-8"><strong>R @Model.TotalAmount.ToString("N2")</strong></dd>
+
+                        @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+                        {
+                            <dt class="col-sm-4">Additional Notes</dt>
+                            <dd class="col-sm-8">@Model.AdditionalNotes</dd>
+                        }
+
+                        <dt class="col-sm-4">Current Status</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">@Model.Status</span>
+                            }
+                            else if (Model.Status == "Approved")
+                            {
+                                <span class="badge bg-success">@Model.Status</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">@Model.Status</span>
+                            }
+                        </dd>
+
+                        @if (!string.IsNullOrEmpty(Model.DocumentPath))
+                        {
+                            <dt class="col-sm-4">Supporting Document</dt>
+                            <dd class="col-sm-8">
+                                <a href="@Model.DocumentPath" target="_blank" class="btn btn-sm btn-outline-primary">View Document</a>
+                            </dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+
+            @if (Model.Status == "Pending")
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Review Decision</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="reviewForm">
+                            <div class="mb-3">
+                                <label for="reviewComments" class="form-label">Comments</label>
+                                <textarea id="reviewComments" name="reviewComments" class="form-control" rows="4"></textarea>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-success" onclick="submitReview('approve')">
+                                    Approve
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="submitReview('reject')">
+                                    Reject
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a asp-action="Index" class="btn btn-secondary">Back to Claims</a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function submitReview(action) {
+            const comments = document.getElementById('reviewComments').value;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = action === 'approve'
+                ? '@Url.Action("ApproveClaim", "Review")'
+                : '@Url.Action("RejectClaim", "Review")';
+
+            const claimIdInput = document.createElement('input');
+            claimIdInput.type = 'hidden';
+            claimIdInput.name = 'id';
+            claimIdInput.value = '@Model.ClaimId';
+            form.appendChild(claimIdInput);
+
+            const commentsInput = document.createElement('input');
+            commentsInput.type = 'hidden';
+            commentsInput.name = 'reviewComments';
+            commentsInput.value = comments;
+            form.appendChild(commentsInput);
+
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '__RequestVerificationToken';
+            tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            form.appendChild(tokenInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+    @Html.AntiForgeryToken()
+}
