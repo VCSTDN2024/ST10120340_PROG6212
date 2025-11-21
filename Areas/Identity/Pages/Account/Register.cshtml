@@ -28,11 +28,12 @@
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
-                <select asp-for="Input.Role" class="form-select" aria-required="true">
+                <select asp-for="Input.Role" class="form-select">
                     <option value="">-- Select Role --</option>
                     <option value="Lecturer">Lecturer</option>
                     <option value="Programme Coordinator">Programme Coordinator</option>
                     <option value="Academic Manager">Academic Manager</option>
+                    <option value="HR">HR</option>
                 </select>
                 <label asp-for="Input.Role">Role</label>
                 <span asp-validation-for="Input.Role" class="text-danger"></span>

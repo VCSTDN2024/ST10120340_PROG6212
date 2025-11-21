@@ -158,12 +158,14 @@ namespace ContractMonthlyClaimSystem.Areas.Identity.Pages.Account
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
 
+                      
                         // REDIRECT BASED ON ROLE AFTER REGISTRATION
                         return Input.Role switch
                         {
                             "Lecturer" => RedirectToAction("Index", "Lecturer", new { area = "" }),
                             "Programme Coordinator" => RedirectToAction("Index", "Review", new { area = "" }),
                             "Academic Manager" => RedirectToAction("Index", "Review", new { area = "" }),
+                            "HR" => RedirectToAction("Index", "HR", new { area = "" }),
                             _ => LocalRedirect(returnUrl)
                         };
                     }
