@@ -1,0 +1,86 @@
+﻿@model List<ContractMonthlyClaimSystem.Models.LecturerClaim>
+
+@{
+    ViewData["Title"] = "Processed Claims";
+}
+
+<div class="container mt-4">
+    <h1><i class="fas fa-check-double"></i> Processed Claims (Invoices Generated)</h1>
+    <hr />
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-primary">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a asp-action="ProcessedClaims" class="btn btn-outline-primary active">
+            <i class="fas fa-check-double"></i> Processed Claims
+        </a>
+        <a asp-action="Reports" class="btn btn-outline-primary">
+            <i class="fas fa-chart-bar"></i> Reports
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h4>All Processed Claims (@Model.Count)</h4>
+        </div>
+        <div class="card-body">
+            @if (Model.Count == 0)
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No processed claims yet.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Invoice Number</th>
+                                <th>Lecturer</th>
+                                <th>Total Amount</th>
+                                <th>Tax (15%)</th>
+                                <th>Net Amount</th>
+                                <th>Processed Date</th>
+                                <th>Processed By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model)
+                            {
+                                var tax = claim.TotalAmount * 0.15m;
+                                var net = claim.TotalAmount - tax;
+                                <tr>
+                                    <td><strong>@claim.InvoiceNumber</strong></td>
+                                    <td>@claim.LecturerName</td>
+                                    <td>R@claim.TotalAmount.ToString("N2")</td>
+                                    <td class="text-danger">R@tax.ToString("N2")</td>
+                                    <td><strong>R@net.ToString("N2")</strong></td>
+                                    <td>@claim.HRProcessedDate?.ToString("dd MMM yyyy")</td>
+                                    <td>@claim.HRPersonnelName</td>
+                                    <td>
+                                        <a asp-action="ViewInvoice" asp-route-id="@claim.Id"
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-file-invoice"></i> View Invoice
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-secondary">
+                                <td colspan="2" class="text-end"><strong>Totals:</strong></td>
+                                <td><strong>R@Model.Sum(c => c.TotalAmount).ToString("N2")</strong></td>
+                                <td class="text-danger"><strong>R@(Model.Sum(c => c.TotalAmount) * 0.15m).ToString("N2")</strong></td>
+                                <td><strong>R@(Model.Sum(c => c.TotalAmount) * 0.85m).ToString("N2")</strong></td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

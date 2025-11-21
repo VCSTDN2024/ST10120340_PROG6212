@@ -26,6 +26,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
+                        @if (User.IsInRole("HR") || User.IsInRole("Academic Manager"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="HR" asp-action="Index">
+                                    <i class="fas fa-briefcase"></i> HR Dashboard
+                                </a>
+                            </li>
+                        }
 
                         @if (SignInManager.IsSignedIn(User))
                         {

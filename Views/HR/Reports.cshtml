@@ -1,0 +1,206 @@
+﻿@{
+    ViewData["Title"] = "HR Reports";
+}
+
+<div class="container mt-4">
+    <h1><i class="fas fa-chart-bar"></i> HR Reports & Statistics</h1>
+    <hr />
+
+    @* Navigation *@
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-primary">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a asp-action="ProcessedClaims" class="btn btn-outline-primary">
+            <i class="fas fa-check-double"></i> Processed Claims
+        </a>
+        <a asp-action="Reports" class="btn btn-outline-primary active">
+            <i class="fas fa-chart-bar"></i> Reports
+        </a>
+    </div>
+
+    @* Claims Summary *@
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-clipboard-list"></i> Claims Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h2 class="text-primary">@ViewBag.TotalClaims</h2>
+                                <p class="text-muted mb-0">Total Claims</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h2 class="text-warning">@ViewBag.PendingClaims</h2>
+                                <p class="text-muted mb-0">Pending Review</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h2 class="text-success">@ViewBag.ApprovedClaims</h2>
+                                <p class="text-muted mb-0">Approved</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h2 class="text-danger">@ViewBag.RejectedClaims</h2>
+                                <p class="text-muted mb-0">Rejected</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Financial Summary *@
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-money-bill-wave"></i> Approved Claims Financial</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Total Approved Amount:</strong></td>
+                            <td class="text-end"><h5 class="text-success mb-0">R@(ViewBag.TotalApprovedAmount.ToString("N2"))</h5></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Number of Claims:</strong></td>
+                            <td class="text-end">@ViewBag.ApprovedClaims</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Average per Claim:</strong></td>
+                            <td class="text-end">
+                                R@(ViewBag.ApprovedClaims > 0 ? ((decimal)ViewBag.TotalApprovedAmount / ViewBag.ApprovedClaims).ToString("N2") : "0.00")
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4><i class="fas fa-file-invoice-dollar"></i> Processed Claims (Invoiced)</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Total Processed:</strong></td>
+                            <td class="text-end"><h5 class="text-info mb-0">R@(ViewBag.TotalProcessedAmount.ToString("N2"))</h5></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tax Amount (15%):</strong></td>
+                            <td class="text-end text-danger">R@(ViewBag.TotalTaxAmount.ToString("N2"))</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Net Amount Payable:</strong></td>
+                            <td class="text-end"><strong>R@(ViewBag.TotalNetAmount.ToString("N2"))</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Number of Invoices:</strong></td>
+                            <td class="text-end">@ViewBag.ProcessedClaims</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Processing Statistics *@
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h4><i class="fas fa-tasks"></i> Processing Statistics</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5>Approval Rate</h5>
+                            <div class="progress" style="height: 30px;">
+                                @{
+                                    var approvalRate = ViewBag.TotalClaims > 0
+                                    ? ((decimal)ViewBag.ApprovedClaims / ViewBag.TotalClaims * 100)
+                                    : 0;
+                                }
+                                <div class="progress-bar bg-success" style="width: @(approvalRate)%">
+                                    @(approvalRate.ToString("N1"))%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Rejection Rate</h5>
+                            <div class="progress" style="height: 30px;">
+                                @{
+                                    var rejectionRate = ViewBag.TotalClaims > 0
+                                    ? ((decimal)ViewBag.RejectedClaims / ViewBag.TotalClaims * 100)
+                                    : 0;
+                                }
+                                <div class="progress-bar bg-danger" style="width: @(rejectionRate)%">
+                                    @(rejectionRate.ToString("N1"))%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Processing Rate</h5>
+                            <div class="progress" style="height: 30px;">
+                                @{
+                                    var processingRate = ViewBag.ApprovedClaims > 0
+                                    ? ((decimal)ViewBag.ProcessedClaims / ViewBag.ApprovedClaims * 100)
+                                    : 0;
+                                }
+                                <div class="progress-bar bg-info" style="width: @(processingRate)%">
+                                    @(processingRate.ToString("N1"))%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Automation Impact *@
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-robot"></i> Automation Benefits</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-calculator fa-3x text-success mb-2"></i>
+                            <h5>Auto-Calculation</h5>
+                            <p class="text-muted">100% of claims auto-calculated</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-check-double fa-3x text-primary mb-2"></i>
+                            <h5>Auto-Validation</h5>
+                            <p class="text-muted">6 checks per claim</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-file-invoice-dollar fa-3x text-info mb-2"></i>
+                            <h5>Auto-Invoicing</h5>
+                            <p class="text-muted">@ViewBag.ProcessedClaims invoices generated</p>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-clock fa-3x text-warning mb-2"></i>
+                            <h5>Time Saved</h5>
+                            <p class="text-muted">~90% reduction in processing time</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

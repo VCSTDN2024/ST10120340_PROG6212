@@ -1,0 +1,150 @@
+﻿@model ContractMonthlyClaimSystem.Models.LecturerClaim
+
+@{
+    ViewData["Title"] = "View Invoice";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <h2><i class="fas fa-file-invoice-dollar"></i> Invoice Details</h2>
+                </div>
+                <div class="card-body">
+
+                    @* Invoice Header *@
+                    <div class="text-center mb-4">
+                        <h1 class="display-4">INVOICE</h1>
+                        <h3 class="text-success">@Model.InvoiceNumber</h3>
+                        <p class="text-muted">Generated on @(Model.InvoiceGeneratedDate.HasValue? Model.InvoiceGeneratedDate.Value.ToString("dd MMMM yyyy HH:mm") : "")</p>
+                    </div>
+
+                    <hr />
+
+                    @* Lecturer Details *@
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-user"></i> Bill To:</h5>
+                            <p>
+                                <strong>@Model.LecturerName</strong><br />
+                                Email: @Model.Email
+                            </p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h5><i class="fas fa-calendar"></i> Invoice Details:</h5>
+                            <p>
+                                <strong>Claim ID:</strong> #@Model.Id<br />
+                                <strong>Date Submitted:</strong> @Model.DateSubmitted.ToString("dd MMM yyyy")<br />
+                                <strong>Date Approved:</strong> @(Model.ReviewDate.HasValue? Model.ReviewDate.Value.ToString("dd MMM yyyy") : "")<br />
+                                <strong>Processed By:</strong> @Model.HRPersonnelName
+                            </p>
+                        </div>
+                    </div>
+
+                    @* Service Details *@
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-center">Hours</th>
+                                    <th class="text-end">Rate (R)</th>
+                                    <th class="text-end">Amount (R)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong>Lecturer Services - Monthly Claim</strong>
+                                        @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+                                        {
+                                            <br />
+                                        
+                                            <small class="text-muted">@Model.AdditionalNotes</small>
+                                        }
+                                    </td>
+                                    <td class="text-center">@Model.HoursWorked</td>
+                                    <td class="text-end">@(Model.HourlyRate.ToString("N2"))</td>
+                                    <td class="text-end"><strong>@(Model.TotalAmount.ToString("N2"))</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @* Amount Summary *@
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <table class="table">
+                                <tr>
+                                    <td><strong>Subtotal:</strong></td>
+                                    <td class="text-end">R@(Model.TotalAmount.ToString("N2"))</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tax (@(ViewBag.TaxRate)%):</strong></td>
+                                    <td class="text-end">R@(ViewBag.TaxAmount.ToString("N2"))</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td><strong>Net Amount:</strong></td>
+                                    <td class="text-end"><h4 class="text-success mb-0">R@(ViewBag.NetAmount.ToString("N2"))</h4></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    @* Payment Information *@
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Payment Information</h5>
+                        <p class="mb-0">
+                            <strong>Due Date:</strong> @(Model.InvoiceGeneratedDate.HasValue? Model.InvoiceGeneratedDate.Value.AddDays(30).ToString("dd MMMM yyyy") : "")<br />
+                            <strong>Payment Terms:</strong> Net 30 days<br />
+                            <strong>Status:</strong> <span class="badge bg-warning text-dark">Pending Payment</span>
+                        </p>
+                    </div>
+
+                    @* Supporting Document *@
+                    @if (!string.IsNullOrEmpty(Model.DocumentPath))
+                    {
+                        <div class="alert alert-secondary">
+                            <h6><i class="fas fa-paperclip"></i> Supporting Documentation</h6>
+                            <a href="@Model.DocumentPath" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> View Supporting Document
+                            </a>
+                        </div>
+                    }
+
+                    @* Action Buttons *@
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                        <button onclick="window.print()" class="btn btn-primary">
+                            <i class="fas fa-print"></i> Print Invoice
+                        </button>
+                        <a asp-action="ProcessedClaims" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Processed Claims
+                        </a>
+                    </div>
+
+                    @* Footer *@
+                    <div class="text-center mt-4 pt-4 border-top">
+                        <p class="text-muted small">
+                            This is an automatically generated invoice by the Contract Monthly Claim System.<br />
+                            For queries, please contact HR Department.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn, .alert-info, .alert-secondary {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
