@@ -87,8 +87,8 @@
                                 </div>
                                 <div class="card-body">
                                     <p><strong>Hours Worked:</strong> @Model.HoursWorked hours</p>
-                                    <p><strong>Hourly Rate:</strong> R@Model.HourlyRate.ToString("N2")</p>
-                                    <p><strong>Calculation:</strong> @Model.HoursWorked × R@Model.HourlyRate.ToString("N2")</p>
+                                    <p><strong>Hourly Rate:</strong> R@(Model.HourlyRate.ToString("N2"))</p>
+                                    <p><strong>Calculation:</strong> @Model.HoursWorked × R@(Model.HourlyRate.ToString("N2"))</p>
                                     <p class="mb-0">
                                         <strong>Total Amount:</strong>
                                         <span class="text-success" style="font-size: 1.5rem;">
