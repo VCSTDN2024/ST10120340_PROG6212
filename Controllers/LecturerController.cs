@@ -43,51 +43,92 @@ namespace ContractMonthlyClaimSystem.Controllers
             return View();
         }
 
-        // POST: Submit Claim
+        // POST: Submit Claim (ENHANCED WITH PART 3 AUTOMATION)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitClaim(SubmitClaimViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.GetUserAsync(User);
-                string? documentPath = null;
-
-                // Handle file upload
-                if (model.SupportingDocument != null)
+                try
                 {
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-                    Directory.CreateDirectory(uploadsFolder);
+                    var user = await _userManager.GetUserAsync(User);
+                    string? documentPath = null;
+                    long? fileSize = null;
+                    string? fileType = null;
 
-                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.SupportingDocument.FileName;
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    // ===== PART 3: ENHANCED FILE UPLOAD WITH VALIDATION =====
+                    if (model.SupportingDocument != null && model.SupportingDocument.Length > 0)
                     {
-                        await model.SupportingDocument.CopyToAsync(fileStream);
+                        // Validate file type
+                        var allowedExtensions = new[] { ".pdf", ".docx", ".xlsx", ".jpg", ".jpeg", ".png" };
+                        var fileExtension = Path.GetExtension(model.SupportingDocument.FileName).ToLowerInvariant();
+
+                        if (!allowedExtensions.Contains(fileExtension))
+                        {
+                            ModelState.AddModelError("SupportingDocument", "Invalid file type. Allowed types: PDF, DOCX, XLSX, JPG, PNG");
+                            return View(model);
+                        }
+
+                        // Validate file size (max 5MB)
+                        if (model.SupportingDocument.Length > 5 * 1024 * 1024)
+                        {
+                            ModelState.AddModelError("SupportingDocument", "File size must not exceed 5MB");
+                            return View(model);
+                        }
+
+                        // Save file
+                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+                        Directory.CreateDirectory(uploadsFolder);
+
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + model.SupportingDocument.FileName;
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await model.SupportingDocument.CopyToAsync(fileStream);
+                        }
+
+                        documentPath = "/uploads/" + uniqueFileName;
+                        fileSize = model.SupportingDocument.Length;
+                        fileType = fileExtension;
                     }
 
-                    documentPath = "/uploads/" + uniqueFileName;
+                    // Create claim object
+                    var claim = new LecturerClaim
+                    {
+                        LecturerId = user.Id,
+                        LecturerName = user.Email,
+                        HoursWorked = model.HoursWorked,
+                        HourlyRate = model.HourlyRate,
+                        AdditionalNotes = model.AdditionalNotes,
+                        DateSubmitted = DateTime.Now,
+                        Status = "Pending",
+                        DocumentPath = documentPath,
+                        DocumentFileSize = fileSize,
+                        DocumentFileType = fileType
+                    };
+
+                    // ===== PART 3: AUTO-CALCULATION =====
+                    claim.CalculateTotalAmount();
+
+                    // ===== PART 3: BUSINESS RULE VALIDATION =====
+                    if (!claim.ValidateClaimRules(out string validationMessage))
+                    {
+                        ModelState.AddModelError("", validationMessage);
+                        return View(model);
+                    }
+
+                    _context.LecturerClaims.Add(claim);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"Claim submitted successfully! Total Amount: R{claim.TotalAmount:N2}";
+                    return RedirectToAction(nameof(Index));
                 }
-
-                var claim = new LecturerClaim
+                catch (Exception ex)
                 {
-                    LecturerId = user.Id,
-                    LecturerName = user.Email,
-                    HoursWorked = model.HoursWorked,
-                    HourlyRate = model.HourlyRate,
-                    TotalAmount = model.HoursWorked * model.HourlyRate,
-                    AdditionalNotes = model.AdditionalNotes,
-                    DateSubmitted = DateTime.Now,
-                    Status = "Pending",
-                    DocumentPath = documentPath
-                };
-
-                _context.LecturerClaims.Add(claim);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Claim submitted successfully!";
-                return RedirectToAction(nameof(Index));
+                    ModelState.AddModelError("", $"Error submitting claim: {ex.Message}");
+                }
             }
 
             return View(model);
@@ -106,6 +147,54 @@ namespace ContractMonthlyClaimSystem.Controllers
             }
 
             return View(claim);
+        }
+
+        // ===== PART 3: AJAX ENDPOINT FOR AUTO-CALCULATION =====
+        [HttpPost]
+        public JsonResult CalculateTotalAmount(decimal hoursWorked, decimal hourlyRate)
+        {
+            try
+            {
+                var totalAmount = hoursWorked * hourlyRate;
+
+                // Validate against business rules
+                var claim = new LecturerClaim
+                {
+                    HoursWorked = hoursWorked,
+                    HourlyRate = hourlyRate,
+                    TotalAmount = totalAmount
+                };
+
+                bool isValid = claim.ValidateClaimRules(out string message);
+
+                return Json(new
+                {
+                    success = true,
+                    totalAmount = totalAmount,
+                    isValid = isValid,
+                    message = message
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        // ===== PART 3: TRACK CLAIM STATUS =====
+        public async Task<IActionResult> TrackStatus()
+        {
+            var userId = _userManager.GetUserId(User);
+            var claims = await _context.LecturerClaims
+                .Where(c => c.LecturerId == userId)
+                .OrderByDescending(c => c.DateSubmitted)
+                .ToListAsync();
+
+            return View(claims);
         }
     }
 }
