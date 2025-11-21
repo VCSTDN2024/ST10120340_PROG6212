@@ -1,143 +1,307 @@
 ﻿@model ContractMonthlyClaimSystem.ViewModels.ReviewClaimViewModel
+@using ContractMonthlyClaimSystem.Models
 
 @{
     ViewData["Title"] = "Review Claim";
+    var validationResult = ViewBag.ValidationResult as ValidationResult;
 }
 
 <div class="container mt-4">
-    <h2>Review Claim</h2>
-    <hr />
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
     <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Claim Information</h5>
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow-lg">
+                <div class="card-header bg-info text-white">
+                    <h2><i class="fas fa-clipboard-check"></i> Review Claim #@Model.ClaimId</h2>
                 </div>
                 <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Lecturer</dt>
-                        <dd class="col-sm-8">@Model.LecturerName</dd>
 
-                        <dt class="col-sm-4">Date Submitted</dt>
-                        <dd class="col-sm-8">@Model.DateSubmitted.ToString("dd MMMM yyyy HH:mm")</dd>
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
 
-                        <dt class="col-sm-4">Hours Worked</dt>
-                        <dd class="col-sm-8">@Model.HoursWorked</dd>
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
 
-                        <dt class="col-sm-4">Hourly Rate</dt>
-                        <dd class="col-sm-8">R @Model.HourlyRate.ToString("N2")</dd>
+                    <!-- ===== PART 3: AUTOMATED VALIDATION RESULTS ===== -->
+                    @if (validationResult != null)
+                    {
+                        <div class="alert @(validationResult.IsValid ? "alert-success" : "alert-warning") mb-4">
+                            <h4><i class="fas fa-robot"></i> Automated Validation Results</h4>
+                            <hr />
+                            <ul class="list-unstyled mb-3">
+                                @foreach (var message in validationResult.ValidationMessages)
+                                {
+                                    <li class="mb-2">
+                                        <strong>@message</strong>
+                                    </li>
+                                }
+                            </ul>
+                            <div class="p-3 bg-light rounded">
+                                <strong>@validationResult.OverallRecommendation</strong>
+                            </div>
+                        </div>
+                    }
 
-                        <dt class="col-sm-4">Total Amount</dt>
-                        <dd class="col-sm-8"><strong>R @Model.TotalAmount.ToString("N2")</strong></dd>
+                    <!-- Claim Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h5><i class="fas fa-user"></i> Lecturer Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Name:</strong> @Model.LecturerName</p>
+                                    <p><strong>Date Submitted:</strong> @Model.DateSubmitted.ToString("dd MMM yyyy HH:mm")</p>
+                                    <p>
+                                        <strong>Current Status:</strong>
+                                        @if (Model.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark">@Model.Status</span>
+                                        }
+                                        else if (Model.Status == "Approved" || Model.Status == "Coordinator Approved")
+                                        {
+                                            <span class="badge bg-success">@Model.Status</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@Model.Status</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
-                        @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
-                        {
-                            <dt class="col-sm-4">Additional Notes</dt>
-                            <dd class="col-sm-8">@Model.AdditionalNotes</dd>
-                        }
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h5><i class="fas fa-calculator"></i> Payment Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Hours Worked:</strong> @Model.HoursWorked hours</p>
+                                    <p><strong>Hourly Rate:</strong> R@Model.HourlyRate.ToString("N2")</p>
+                                    <p><strong>Calculation:</strong> @Model.HoursWorked × R@Model.HourlyRate.ToString("N2")</p>
+                                    <p class="mb-0">
+                                        <strong>Total Amount:</strong>
+                                        <span class="text-success" style="font-size: 1.5rem;">
+                                            R@Model.TotalAmount.ToString("N2")
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                        <dt class="col-sm-4">Current Status</dt>
-                        <dd class="col-sm-8">
-                            @if (Model.Status == "Pending")
-                            {
-                                <span class="badge bg-warning text-dark">@Model.Status</span>
-                            }
-                            else if (Model.Status == "Approved")
-                            {
-                                <span class="badge bg-success">@Model.Status</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">@Model.Status</span>
-                            }
-                        </dd>
+                    <!-- Additional Information -->
+                    @if (!string.IsNullOrEmpty(Model.AdditionalNotes))
+                    {
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5><i class="fas fa-sticky-note"></i> Additional Notes</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>@Model.AdditionalNotes</p>
+                            </div>
+                        </div>
+                    }
 
-                        @if (!string.IsNullOrEmpty(Model.DocumentPath))
-                        {
-                            <dt class="col-sm-4">Supporting Document</dt>
-                            <dd class="col-sm-8">
-                                <a href="@Model.DocumentPath" target="_blank" class="btn btn-sm btn-outline-primary">View Document</a>
-                            </dd>
-                        }
-                    </dl>
+                    <!-- Supporting Document -->
+                    @if (!string.IsNullOrEmpty(Model.DocumentPath))
+                    {
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5><i class="fas fa-file-pdf"></i> Supporting Document</h5>
+                            </div>
+                            <div class="card-body">
+                                <a href="@Model.DocumentPath" target="_blank" class="btn btn-outline-primary">
+                                    <i class="fas fa-download"></i> View/Download Document
+                                </a>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- ===== PART 3: APPROVAL WORKFLOW STATUS ===== -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5><i class="fas fa-tasks"></i> Approval Workflow</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <i class="fas fa-user-tie fa-3x @(ViewBag.IsCoordinatorApproved ? "text-success" : "text-secondary")"></i>
+                                    <p class="mt-2">
+                                        <strong>Programme Coordinator</strong><br />
+                                        @if (ViewBag.IsCoordinatorApproved)
+                                        {
+                                            <span class="badge bg-success">✓ Approved</span>
+                                        
+                                            <br />
+                                            <small>@ViewBag.CoordinatorName</small>
+
+                                            <br />
+                                            <small>@(ViewBag.CoordinatorApprovedDate != null ? ((DateTime)ViewBag.CoordinatorApprovedDate).ToString("dd MMM yyyy") : "")</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Pending</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="fas fa-user-shield fa-3x @(ViewBag.IsManagerApproved ? "text-success" : "text-secondary")"></i>
+                                    <p class="mt-2">
+                                        <strong>Academic Manager</strong><br />
+                                        @if (ViewBag.IsManagerApproved)
+                                        {
+                                            <span class="badge bg-success">✓ Approved</span>
+                                        
+                                            <br />
+                                            <small>@ViewBag.ManagerName</small>
+
+                                            <br />
+                                            <small>@(ViewBag.ManagerApprovedDate != null ? ((DateTime)ViewBag.ManagerApprovedDate).ToString("dd MMM yyyy") : "")</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Pending</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <i class="fas fa-building fa-3x text-secondary"></i>
+                                    <p class="mt-2">
+                                        <strong>HR Processing</strong><br />
+                                        <span class="badge bg-secondary">Awaiting Approval</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    @if (Model.Status == "Pending" || Model.Status == "Coordinator Approved")
+                    {
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5><i class="fas fa-gavel"></i> Review Decision</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="reviewForm">
+                                    <div class="mb-3">
+                                        <label for="reviewComments" class="form-label">Review Comments</label>
+                                        <textarea id="reviewComments" name="reviewComments" class="form-control" rows="3"
+                                              placeholder="Enter your review comments (optional for approval, required for rejection)"></textarea>
+                                    </div>
+
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                                        <button type="button" class="btn btn-success btn-lg" onclick="approveClaim()">
+                                            <i class="fas fa-check-circle"></i> Approve Claim
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-lg" onclick="rejectClaim()">
+                                            <i class="fas fa-times-circle"></i> Reject Claim
+                                        </button>
+                                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left"></i> Back to Claims
+                        </a>
+                    }
                 </div>
             </div>
-
-            @if (Model.Status == "Pending")
-            {
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Review Decision</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="reviewForm">
-                            <div class="mb-3">
-                                <label for="reviewComments" class="form-label">Comments</label>
-                                <textarea id="reviewComments" name="reviewComments" class="form-control" rows="4"></textarea>
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-success" onclick="submitReview('approve')">
-                                    Approve
-                                </button>
-                                <button type="button" class="btn btn-danger" onclick="submitReview('reject')">
-                                    Reject
-                                </button>
-                                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <a asp-action="Index" class="btn btn-secondary">Back to Claims</a>
-            }
         </div>
     </div>
 </div>
 
 @section Scripts {
+    @Html.AntiForgeryToken()
     <script>
-        function submitReview(action) {
+        function approveClaim() {
             const comments = document.getElementById('reviewComments').value;
 
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = action === 'approve'
-                ? '@Url.Action("ApproveClaim", "Review")'
-                : '@Url.Action("RejectClaim", "Review")';
+            if (confirm('Are you sure you want to APPROVE this claim for R@Model.TotalAmount.ToString("N2")?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("ApproveClaim", "Review")';
 
-            const claimIdInput = document.createElement('input');
-            claimIdInput.type = 'hidden';
-            claimIdInput.name = 'id';
-            claimIdInput.value = '@Model.ClaimId';
-            form.appendChild(claimIdInput);
+                const claimIdInput = document.createElement('input');
+                claimIdInput.type = 'hidden';
+                claimIdInput.name = 'id';
+                claimIdInput.value = '@Model.ClaimId';
+                form.appendChild(claimIdInput);
 
-            const commentsInput = document.createElement('input');
-            commentsInput.type = 'hidden';
-            commentsInput.name = 'reviewComments';
-            commentsInput.value = comments;
-            form.appendChild(commentsInput);
+                const commentsInput = document.createElement('input');
+                commentsInput.type = 'hidden';
+                commentsInput.name = 'reviewComments';
+                commentsInput.value = comments;
+                form.appendChild(commentsInput);
 
-            const tokenInput = document.createElement('input');
-            tokenInput.type = 'hidden';
-            tokenInput.name = '__RequestVerificationToken';
-            tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
-            form.appendChild(tokenInput);
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(tokenInput);
 
-            document.body.appendChild(form);
-            form.submit();
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function rejectClaim() {
+            const comments = document.getElementById('reviewComments').value;
+
+            if (!comments || comments.trim() === '') {
+                alert('Please provide comments explaining the reason for rejection.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to REJECT this claim? This action cannot be undone.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("RejectClaim", "Review")';
+
+                const claimIdInput = document.createElement('input');
+                claimIdInput.type = 'hidden';
+                claimIdInput.name = 'id';
+                claimIdInput.value = '@Model.ClaimId';
+                form.appendChild(claimIdInput);
+
+                const commentsInput = document.createElement('input');
+                commentsInput.type = 'hidden';
+                commentsInput.name = 'reviewComments';
+                commentsInput.value = comments;
+                form.appendChild(commentsInput);
+
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                form.appendChild(tokenInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
         }
     </script>
-    @Html.AntiForgeryToken()
+
+    <style>
+        .card {
+            border: none;
+        }
+    </style>
 }
